@@ -74,6 +74,7 @@ public class Main extends JFrame {
 	File jarFile;
 	private Map<Integer, ArrayList<String>> hotKeyList = new HashMap<>();
 	{
+
 		try {
 			// file = new
 			// File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -298,11 +299,7 @@ public class Main extends JFrame {
 				PasswordGenerator generator = calcGenerator();
 
 				PassList list = new PassList();
-				Date now = new Date();
-				DateFormat df = DateFormat.getDateInstance();
-				String s = df.format(now);
 				try {
-					long milliseconds = System.currentTimeMillis();
 					// String FORMAT = "%02d_%02d_%02d";
 					// String time = String.format(FORMAT,
 					// TimeUnit.MILLISECONDS.toHours(milliseconds),
@@ -311,7 +308,18 @@ public class Main extends JFrame {
 					// TimeUnit.MILLISECONDS.toSeconds(milliseconds)
 					// - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
 					String jarDir = jarFile.getParentFile().getPath();
-					writer = new PrintWriter(jarDir + "\\" + s + " " + milliseconds + ".txt", "UTF-8");
+					// writer = new PrintWriter(jarDir + "\\" +
+					// DateFormat.getDateInstance().format(now)+ " " +
+					// DateFormat.getTimeInstance().format(now) + ".txt", "UTF-8");
+					// String d = DateFormat.getInstance().format(now).toString().replaceAll("/",
+					// "_");
+
+					// String name = DateFormat.getDateTimeInstance().format(now).replace(':',
+					// ';').replace(':', ';')
+					// .replace(':', ';') + ";" + (milliseconds + "").substring((milliseconds +
+					// "").length() - 3);
+
+					writer = new PrintWriter(jarDir + "\\" + generateName() + ".txt", "UTF-8");
 
 					if (generator.checkString().length() > 0) {
 						ArrayList<String> generatePassword = generator.GeneratePassword();
@@ -319,11 +327,13 @@ public class Main extends JFrame {
 							if (Integer.parseInt(passLenght.getText()) > 0) {
 
 								if (generatePassword.size() > 0) {
+
+									list.setPassList(generatePassword);
+									TablePassword buttonDemo = new TablePassword();
+
 									for (String string : generatePassword) {
 										writer.println(string);
 									}
-									list.setPassList(generatePassword);
-									TablePassword buttonDemo = new TablePassword();
 								}
 							} else {
 								passLenght.setText("20");
@@ -344,8 +354,39 @@ public class Main extends JFrame {
 					e1.printStackTrace();
 				}
 			}
+
 		});
 
+	}
+
+	private String generateName() {
+
+		String name = DateFormat.getDateTimeInstance().format(new Date()).replaceAll(":", ";");
+		String mili = System.currentTimeMillis() + "";
+		String substring = name.substring(0, name.length() - 3);
+		substring += ";" + mili.substring(mili.length() - 3);
+		substring += " " + name.substring(substring.length() - 3);
+		name = substring;
+		if (name.contains("PM")) {
+			name = name.substring(0, name.length() - 3);
+			String[] split = name.split(" ");
+			for (int i = 0; i < split.length; i++) {
+				if (split[i].contains(";")) {
+					String[] split2 = split[i].split(";");
+					int parseInt = Integer.parseInt(split2[0]);
+					if (parseInt >= 1) {
+						if ((name.contains(" " + parseInt + ";"))) {
+							name = name.replace(" " + parseInt + ";", " " + (parseInt += 12) + ";");
+						}
+					}
+				}
+
+			}
+
+		} else if (name.contains("AM")) {
+			name = name.substring(0, name.length() - 3);
+		}
+		return name;
 	}
 
 	private void initUI() {
